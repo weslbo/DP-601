@@ -1,0 +1,9 @@
+import requests
+import pandas as pd
+import io
+
+csv = requests.get("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-09-05/demographics.csv").text
+pd_df = pd.read_csv(io.StringIO(csv), sep=",")
+dataframe = spark.createDataFrame(pd_df)
+
+display(dataframe)
