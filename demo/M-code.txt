@@ -1,0 +1,24 @@
+let
+  Source = Csv.Document(Web.Contents("https://mngenv925531-my.sharepoint.com/personal/admin_bolster-soft_com/Documents/Apps/Microsoft%20Power%20Query/Uploaded%20Files/estat_proj_23np$defaultview_filtered%202.tsv"), [Delimiter = "#(tab)", Columns = 19, Encoding = 65001]),
+  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", Int64.Type}, {"Column3", Int64.Type}, {"Column4", Int64.Type}, {"Column5", Int64.Type}, {"Column6", Int64.Type}, {"Column7", Int64.Type}, {"Column8", Int64.Type}, {"Column9", Int64.Type}, {"Column10", Int64.Type}, {"Column11", Int64.Type}, {"Column12", Int64.Type}, {"Column13", Int64.Type}, {"Column14", Int64.Type}, {"Column15", Int64.Type}, {"Column16", Int64.Type}, {"Column17", Int64.Type}, {"Column18", Int64.Type}, {"Column19", Int64.Type}}),
+  #"Split column by delimiter" = Table.SplitColumn(#"Changed column type", "Column1", Splitter.SplitTextByDelimiter(","), {"Column1.1", "Column1.2", "Column1.3", "Column1.4", "Column1.5", "Column1.6"}),
+  #"Promoted headers" = Table.PromoteHeaders(#"Split column by delimiter", [PromoteAllScalars = true]),
+  #"Changed column type 1" = Table.TransformColumnTypes(#"Promoted headers", {{"freq", type text}, {"projection", type text}, {"sex", type text}, {"age", type text}, {"unit", type text}, {"geo\TIME_PERIOD", type text}, {"2022", Int64.Type}, {"2023", Int64.Type}, {"2025", Int64.Type}, {"2030", Int64.Type}, {"2035", Int64.Type}, {"2040", Int64.Type}, {"2045", Int64.Type}, {"2050", Int64.Type}, {"2055", Int64.Type}, {"2060", Int64.Type}, {"2065", Int64.Type}, {"2070", Int64.Type}, {"2075", Int64.Type}, {"2080", Int64.Type}, {"2085", Int64.Type}, {"2090", Int64.Type}, {"2095", Int64.Type}, {"2100", Int64.Type}}),
+  #"Renamed columns" = Table.RenameColumns(#"Changed column type 1", {{"geo\TIME_PERIOD", "geo"}}),
+  #"Filtered rows" = Table.SelectRows(#"Renamed columns", each ([geo] <> "EA20" and [geo] <> "EU27_2020")),
+  #"Removed columns" = Table.RemoveColumns(#"Filtered rows", {"freq", "age", "unit"}),
+  #"Filtered rows 1" = Table.SelectRows(#"Removed columns", each ([sex] <> "T")),
+  #"Merged queries" = Table.NestedJoin(#"Filtered rows 1", {"projection"}, #"Type of Projections", {"Code"}, "Type of Projections", JoinKind.Inner),
+  #"Expanded Type of Projections" = Table.ExpandTableColumn(#"Merged queries", "Type of Projections", {"Type of Projection"}, {"Type of Projection"}),
+  #"Reordered columns" = Table.ReorderColumns(#"Expanded Type of Projections", {"Type of Projection", "projection", "sex", "geo", "2022", "2023", "2025", "2030", "2035", "2040", "2045", "2050", "2055", "2060", "2065", "2070", "2075", "2080", "2085", "2090", "2095", "2100"}),
+  #"Removed columns 1" = Table.RemoveColumns(#"Reordered columns", {"projection"}),
+  #"Unpivoted columns" = Table.UnpivotOtherColumns(#"Removed columns 1", {"Type of Projection", "sex", "geo"}, "Attribute", "Value"),
+  #"Renamed columns 1" = Table.RenameColumns(#"Unpivoted columns", {{"Attribute", "year"}, {"Value", "population"}}),
+  #"Pivoted column" = Table.Pivot(Table.TransformColumnTypes(#"Renamed columns 1", {{"Type of Projection", type text}}), List.Distinct(Table.TransformColumnTypes(#"Renamed columns 1", {{"Type of Projection", type text}})[Type of Projection]), "Type of Projection", "population"),
+  #"Merged queries 1" = Table.NestedJoin(#"Pivoted column", {"geo"}, Countries, {"Column2"}, "Countries", JoinKind.Inner),
+  #"Expanded Countries" = Table.ExpandTableColumn(#"Merged queries 1", "Countries", {"Column1"}, {"Column1"}),
+  #"Renamed columns 2" = Table.RenameColumns(#"Expanded Countries", {{"Column1", "Country"}}),
+  #"Reordered columns 1" = Table.ReorderColumns(#"Renamed columns 2", {"sex", "Country", "geo", "year", "Baseline projects", "Sensitivity test - higher migration", "Sensitivity test - lower fertility", "Sensitivity test - lower migration", "Sensitivity test - lower mortality", "Sensitivity test - no migration"}),
+  #"Changed column type 2" = Table.TransformColumnTypes(#"Reordered columns 1", {{"year", type date}})
+in
+  #"Changed column type 2"
