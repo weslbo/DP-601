@@ -1,16 +1,5 @@
 # DP-601 Resources
 
-Create a DP-601 Workspace with the Fabric Trial Capacity
-
-```powershell
-Install-Module -Name MicrosoftPowerBIMgmt
-Connect-PowerBIServiceAccount
-
-$workspace = New-PowerBIWorkspace -Name "DP-601"
-Set-PowerBIWorkspace -Scope Organization -Id $workspace.Id -Description "Course DP-601: Implementing a Lakehouse with Microsoft Fabric" 
-Set-PowerBIWorkspace -Scope Organization -Id $workspace.Id -CapacityId 8774B796-23F5-4833-A18B-5FC6F2026E66 # Fabric Trial Capacity
-```
-
 ## Create a lakehouse
 
 Create a new lakehouse called `dp601lake`
@@ -22,3 +11,9 @@ Create a new lakehouse called `dp601lake`
 ![import-notebook](./images/import-notebook.png)
 
 1. Import the notebooks from the `notebooks` folder (you can select multiple files at once 😉)
+
+1. Run the 00-Setup notebook. It will copy some data from github into the lakehouse.
+
+## Explore the dataflow demo
+
+1. Explore the dataflow demo as provided [here](./demo/dataflows.md)
